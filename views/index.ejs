@@ -2,42 +2,77 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="<%= csrfToken %>" />
+    <title><%= title %></title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="./CSS/styles.css" rel="stylesheet" />
-    <title>TODO-Application</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script>
+      var token = document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content");
+      function updateTodo(id, completionStatus) {
+        fetch(`/todos/${id}`, {
+          method: "put",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            completed: completionStatus,
+            _csrf: token,
+          }),
+        })
+          .then((res) => {
+            window.location.reload(true);
+          })
+          .catch((err) => console.error(err));
+      }
+      function deleteTodo(id) {
+        console.log(id);
+        fetch(`/todos/${id}`, {
+          method: "delete",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            _csrf: token,
+          }),
+        })
+          .then((res) => {
+            window.location.reload();
+          })
+          .catch((err) => console.error(err));
+      }
+    </script>
   </head>
-  <!--<header> <%- include('header.ejs')%></header>-->
+
   <body>
     <div class="grid grid-cols-6">
       <div class="col-start-3 col-span-2">
-        <!--<%- include('todos.ejs')%></div>-->
-        <%- include('header.ejs')%>
-        <form action="">
-          <div class="flex gap-4 py-4">
+        <%- include('header.ejs') %>
+        <form action="/todos" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <div class="flex gap-2 py-4">
             <div class="flex-auto">
               <input
                 type="text"
-                name=""
-                id=""
-                class="border border-gray-300 rounded text-gray-900 p-2 text-sm w-full"
-                placeholder="What is next ?"
+                placeholder="What's next?"
+                name="title"
+                class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm"
                 required
               />
             </div>
             <div class="flex-auto">
               <input
                 type="date"
-                name=""
-                id=""
-                class="border border-gray-300 rounded text-gray-900 p-2 text-sm w-full leading-4"
+                name="dueDate"
+                class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm leading-4"
               />
             </div>
-            <div class="flex-no">
+            <div class="flex-none">
               <button
                 type="submit"
-                class="bg-green-600 rounded px-5 py-1.5 text-white rounded font-medium mr-2 mb-2"
+                class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb-2"
               >
                 Add
               </button>
@@ -45,41 +80,12 @@
           </div>
         </form>
         <div>
-          <h5>
-            Overdue
-            <span
-              id="count-over-due "
-              class="w-full rounded bg-gray-300 text-black px-3 py-1.5 mr-2"
-              >1</span
-            >
-          </h5>
-
-          <%- include('todos.ejs')%>
+          <%- include('todo.ejs', {title: "Overdue" , data: overdue}) %> <%-
+          include('todo.ejs', {title: "Due Today" , data: dueToday}) %> <%-
+          include('todo.ejs', {title: "Due Later" , data: dueLater}) %> <%-
+          include('todo.ejs', {title: "Completed items" , data: completed}) %>
         </div>
-
-        <h5 id="count-due-today">
-          Due Today
-          <span
-            id="count-due-today "
-            class="w-full rounded bg-gray-300 text-black px-3 py-1.5"
-            >2</span
-          >
-        </h5>
-
-        <%- include('todos.ejs')%>
-
-        <h5>
-          Due Later
-          <span
-            id="count-due-later "
-            class="w-full rounded bg-gray-300 text-black px-3 py-1.5"
-            >3</span
-          >
-        </h5>
-
-        <%- include('todos.ejs')%>
       </div>
     </div>
   </body>
-  <!--<footer><%- include('footer.ejs')%></footer>-->
 </html>
